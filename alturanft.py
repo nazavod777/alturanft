@@ -20,6 +20,7 @@ class Wrong_Response(BaseException):
 class Wrong_PrivateKey(BaseException):
 	pass
 
+w3.eth.account.enable_unaudited_hdwallet_features()
 disable_warnings()
 def clear(): return system('cls')
 logger.remove()
@@ -44,20 +45,29 @@ def take_proxies(length):
 
 def mainth(email, wallet_data, proxy):
 	try:
-		private_key = [current_wallet for current_wallet in wallet_data.split(':') if len(current_wallet) == 66 and current_wallet[:2] == '0x' or len(current_wallet) == 64]
+		if ' ' in wallet_data:
+			try:
+				private_key = Account.from_mnemonic(wallet_data, account_path="m/44'/60'/0'/0/0").privateKey.hex()
+				address = Account.from_key(str(private_key)).address
 
-		if len(private_key) == 1: private_key = private_key[0]
-		else: raise Wrong_PrivateKey('')
+			except:
+				raise Wrong_PrivateKey('')
 
-		if private_key[:2] != '0x': private_key = f'0x{private_key}'
+		else:
+			private_key = [current_wallet for current_wallet in wallet_data.split(':') if len(current_wallet) == 66 and current_wallet[:2] == '0x' or len(current_wallet) == 64]
 
-		try:
-			address = Account.from_key(str(private_key)).address
-		except:
-			raise Wrong_PrivateKey('')
+			if len(private_key) == 1: private_key = private_key[0]
+			else: raise Wrong_PrivateKey('')
 
-	except Wrong_PrivateKey():
-		logger.error(f'{email} | Wrong private key: {wallet_data}')
+			if private_key[:2] != '0x': private_key = f'0x{private_key}'
+
+			try:
+				address = Account.from_key(str(private_key)).address
+			except:
+				raise Wrong_PrivateKey('')
+
+	except Wrong_PrivateKey:
+		logger.error(f'{email} | Wrong private key or mnemonic: {wallet_data}')
 
 		with open('unregistered.txt', 'a') as file:
 			file.write(f'{email}:{wallet_data}:{proxy}\n')
@@ -91,14 +101,6 @@ def mainth(email, wallet_data, proxy):
 
 		except Wrong_Response as error:
 			logger.error(f'{email} | Wrong response: {str(error)}, response code: {str(r.status_code)}, response: {str(r.text)}')
-
-		except Wrong_PrivateKey():
-			logger.error(f'{email} | Wrong private key: {wallet_data}')
-
-			with open('unregistered.txt', 'a') as file:
-				file.write(f'{email}:{wallet_data}:{proxy}\n')
-
-			return
 
 		except Exception as error:
 			logger.error(f'{email} | Unexpected error : {str(error)}')
