@@ -64,13 +64,12 @@ def mainth(email, wallet_data, proxy):
 
 		return
 
-
 	for _ in range(5):
 		try:
 			session = Session()
 			session.headers.update({'user-agent': random_useragent(), 'accept': 'application/json, text/plain, */*', 'accept-language': 'ru,en;q=0.9,vi;q=0.8,es;q=0.7', 'content-type': 'application/x-www-form-urlencoded', 'origin': 'https://www.alturanft.com', 'referer': 'https://www.alturanft.com/waiting-list'})
 			
-			if proxy:
+			if use_proxy == 'y':
 				if proxy_source == 2:
 					session.proxies.update({'http': f'{proxy_type}://{proxy}', 'https': f'{proxy_type}://{proxy}'})
 
